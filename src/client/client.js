@@ -30,7 +30,7 @@ function getTreatmentAvailable(
   /** Not push impressions if matchingKey is invalid */
   if (matchingKey === false) {
     log.warn('Impression not collected since matchingKey is not a valid key');
-  } else if(!disableImpressionTracking) {
+  } else if(disableImpressionTracking) {
     log.info('Impression tracking disabled');
   } else {
     impressionsTracker({

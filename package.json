@@ -1,5 +1,5 @@
 {
-  "name": "@splitsoftware/splitio",
+  "name": "@deal/splitio-javascript-client",
   "version": "10.4.0",
   "description": "Split SDK",
   "files": [
@@ -10,7 +10,7 @@
     "types/*.d.ts",
     "es"
   ],
-  "repository": "splitio/javascript-client",
+  "repository": "deal/split-javascript-client",
   "homepage": "https://github.com/splitio/javascript-client#readme",
   "bugs": "https://github.com/splitio/javascript-client/issues",
   "license": "Apache-2.0",
@@ -47,10 +47,11 @@
     "karma-phantomjs-launcher": "1.0.4",
     "karma-tap": "4.1.4",
     "karma-webpack": "3.0.2",
+    "lodash": "4.17.11",
     "redis-dump": "0.1.10",
     "redis-server": "1.2.2",
-    "lodash": "4.17.11",
     "rimraf": "2.6.2",
+    "semantic-release": "^15.10.6",
     "sinon": "5.1.1",
     "tape": "4.9.1",
     "tape-catch": "1.0.6",
@@ -85,7 +86,12 @@
     "node-test-suite": "npm run test-node && npm run test-node-e2e && npm run test-node-destroy && npm run test-node-offline && npm run test-node-redis",
     "test": "npm run browser-test-suite && npm run node-test-suite",
     "canary": "npm run rebuild && npm publish --tag canary",
-    "stable": "npm run rebuild && npm publish"
+    "stable": "npm run rebuild && npm publish",
+    "prepublish": "npm run rebuild",
+    "semantic-release": "semantic-release"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@types/node": "10.9.4",

@@ -13,7 +13,8 @@ function getTreatmentAvailable(
   splitName,
   key,
   stopLatencyTracker,
-  impressionsTracker
+  impressionsTracker,
+  disableImpressionTracking
 ) {
   const matchingKey = matching(key);
   const bucketingKey = bucketing(key);
@@ -27,7 +28,11 @@ function getTreatmentAvailable(
   }
 
   /** Not push impressions if matchingKey is invalid */
-  if (matchingKey !== false) {
+  if (matchingKey === false) {
+    log.warn('Impression not collected since matchingKey is not a valid key');
+  } else if(!disableImpressionTracking) {
+    log.info('Impression tracking disabled');
+  } else {
     impressionsTracker({
       feature: splitName,
       keyName: matchingKey,
@@ -37,8 +42,6 @@ function getTreatmentAvailable(
       label,
       changeNumber
     });
-  } else {
-    log.warn('Impression not collected since matchingKey is not a valid key');
   }
 
   stopLatencyTracker();
@@ -47,9 +50,11 @@ function getTreatmentAvailable(
 }
 
 function ClientFactory(context) {
+  const settings = context.get(context.constants.SETTINGS);
   const storage = context.get(context.constants.STORAGE);
   const metricCollectors = context.get(context.constants.COLLECTORS);
   const impressionsTracker = PassTracker(storage.impressions);
+  const disableImpressionTracking = !settings.core.impressionsEnabled
 
   return {
     getTreatment(key, splitName, attributes) {
@@ -57,9 +62,9 @@ function ClientFactory(context) {
       const evaluation = evaluator(key, splitName, attributes, storage);
 
       if (thenable(evaluation)) {
-        return evaluation.then(res => getTreatmentAvailable(res, splitName, key, stopLatencyTracker, impressionsTracker));
+        return evaluation.then(res => getTreatmentAvailable(res, splitName, key, stopLatencyTracker, impressionsTracker, disableImpressionTracking));
       } else {
-        return getTreatmentAvailable(evaluation, splitName, key, stopLatencyTracker, impressionsTracker);
+        return getTreatmentAvailable(evaluation, splitName, key, stopLatencyTracker, impressionsTracker, disableImpressionTracking);
       }
     },
     getTreatments(key, splitNames, attributes) {

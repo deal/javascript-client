@@ -27,6 +27,7 @@ npm:
   extends: .npm_install
   script:
     - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - npm run rebuild
     - npm run semantic-release
   only:
     - master

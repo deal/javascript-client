@@ -18,7 +18,7 @@ stages:
 
 .npm_install:
   before_script: &npm_install
-    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN_RO}' > .npmrc
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
     - npm i
 
 npm:

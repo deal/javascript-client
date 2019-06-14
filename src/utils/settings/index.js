@@ -38,7 +38,9 @@ const base = {
     // traffic type for the given key (only used on browser version)
     trafficType: undefined,
     // toggle impressions tracking of labels
-    labelsEnabled: true
+    labelsEnabled: true,
+    // toggle all impressions tracking
+    impressionsEnabled: true
   },
 
   scheduler: {

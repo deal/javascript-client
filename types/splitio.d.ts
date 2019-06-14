@@ -39,6 +39,7 @@ interface ISettings {
     key: SplitIO.SplitKey,
     trafficType: string,
     labelsEnabled: boolean
+    impressionsEnabled: boolean
   },
   readonly mode: SDKMode,
   readonly scheduler: {
@@ -229,6 +230,12 @@ interface INodeBasicSettings extends ISharedSettings {
      * @default true
      */
     labelsEnabled?: boolean
+    /**
+     * Disable impressions from being sent to Split backend. Should only be used to prevent duplicate tracking in situations like SSR.
+     * @property {boolean} impressionsEnabled
+     * @default true
+     */
+    impressionsEnabled?: boolean
   },
   /**
    * Defines which kind of storage we should instanciate.
@@ -649,6 +656,12 @@ declare namespace SplitIO {
        * @default true
        */
       labelsEnabled?: boolean
+      /**
+       * Disable impressions from being sent to Split backend. Should only be used to prevent duplicate tracking in situations like SSR.
+       * @property {boolean} impressionsEnabled
+       * @default true
+       */
+      impressionsEnabled?: boolean
     },
     /**
      * Mocked features map. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.

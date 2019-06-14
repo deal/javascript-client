@@ -1,0 +1,33 @@
+#
+# Check https://docs.gitlab.com/ee/ci/yaml/README.html for more details
+# Use https://gitlab.com/dealdotcom/split-javascript-client/-/ci/lint to test this file
+#
+image: node:9.11.2
+
+stages:
+  - publish
+
+# https://docs.gitlab.com/ee/ci/yaml/#anchors
+.cache_rw: &cache_rw
+  paths: &cache_paths
+    - node_modules/
+
+.cache_ro: &cache_readonly
+  <<: *cache_rw
+  policy: pull
+
+.npm_install:
+  before_script: &npm_install
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - npm i
+
+npm:
+  stage: publish
+  environment: production
+  extends: .npm_install
+  script:
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - npm run rebuild
+    - npm run semantic-release
+  only:
+    - master

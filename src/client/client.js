@@ -1,3 +1,4 @@
+import { get } from '../utils/lang';
 import logFactory from '../utils/logger';
 const log = logFactory('splitio-client');
 import evaluator from '../engine/evaluator';
@@ -101,6 +102,8 @@ function ClientFactory(context) {
     invokingMethodName
   ) {
     const isSdkReady = context.get(context.constants.READY, true);
+    const settings = context.get(context.constants.SETTINGS);
+    const impressionsEnabled = get(settings, 'core.impressionsEnabled', true);
     const matchingKey = matching(key);
     const bucketingKey = bucketing(key);
 
@@ -112,7 +115,7 @@ function ClientFactory(context) {
     const { treatment, label, changeNumber, config = null } = evaluation;
     log.info(`Split: ${splitName}. Key: ${matchingKey}. Evaluation: ${treatment}. Label: ${label}`);
 
-    if (validateSplitExistance(context, splitName, label, invokingMethodName)) {
+    if (impressionsEnabled && validateSplitExistance(context, splitName, label, invokingMethodName)) {
       log.info('Queueing corresponding impression.');
       impressionsTracker({
         feature: splitName,

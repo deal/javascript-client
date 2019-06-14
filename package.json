@@ -10,7 +10,7 @@
     "types/*.d.ts",
     "es"
   ],
-  "repository": "deal/split-javascript-client",
+  "repository": "git@github.com:deal/split-javascript-client",
   "homepage": "https://github.com/splitio/javascript-client#readme",
   "bugs": "https://github.com/splitio/javascript-client/issues",
   "license": "Apache-2.0",

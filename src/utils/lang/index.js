@@ -11,9 +11,13 @@ export function startsWith(target, sub) {
 /**
  * Checks if the target string ends with the sub string.
  */
-export function endsWith(target, sub) {
+export function endsWith(target, sub, caseInsensitive = false) {
   if (!(isString(target) && isString(sub))) {
     return false;
+  }
+  if (caseInsensitive) {
+    target = target.toLowerCase();
+    sub = sub.toLowerCase();
   }
   return target.slice(target.length - sub.length) === sub;
 }
@@ -107,6 +111,9 @@ export function uniqueId() {
   return uniqueIdCounter++;
 }
 
+/**
+ * Validates if a value is an object.
+ */
 export function isObject(obj) {
   return obj && typeof obj === 'object' && obj.constructor === Object;
 }
@@ -121,13 +128,15 @@ export function merge(target, source, ...rest) {
   isObject(source) && Object.keys(source).forEach(key => {
     let val = source[key];
 
-    if (isObject(val) && res[key] && isObject(res[key])) {
-      val = merge({}, res[key], val);
+    if (isObject(val)) {
+      if (res[key] && isObject(res[key])) { // If both are objects, merge into a new one.
+        val = merge({}, res[key], val);
+      } else { // else make a copy.
+        val = merge({}, val);
+      }
     }
-
-    if (val !== undefined) {
-      res[key] = val;
-    }
+    // We skip undefined values.
+    if (val !== undefined) res[key] = val;
   });
 
   if (rest && rest.length) {
@@ -222,4 +231,22 @@ export function getFnName(fn) {
   if (fn.name) return fn.name;
 
   return (fn.toString().match(/function (.+?)\(/)||['',''])[1];
+}
+
+/**
+ * Shallow clone an object
+ */
+export function shallowClone(obj) {
+  const keys = Object.keys(obj);
+  const output = {};
+
+  for (let i = 0; i < keys.length; i++) {
+    output[keys[i]] = obj[keys[i]];
+  }
+
+  return output;
+}
+
+export function isBoolean(val) {
+  return val === true || val === false;
 }

@@ -18,13 +18,14 @@ import { findIndex } from '../../utils/lang';
 import logFactory from '../../utils/logger';
 const log = logFactory('splitio-engine:combiner');
 import thenable from '../../utils/promise/thenable';
-import LabelsConstants from '../../utils/labels';
+import * as LabelsConstants from '../../utils/labels';
+import { CONTROL } from '../../utils/constants';
 
 function unexpectedInputHandler() {
   log.error('Invalid Split provided, no valid conditions found');
 
   return {
-    treatment: 'control',
+    treatment: CONTROL,
     label: LabelsConstants.EXCEPTION
   };
 }
@@ -36,13 +37,13 @@ function computeTreatment(predicateResults) {
     const evaluation = predicateResults[i];
 
     if (evaluation !== undefined) {
-      log.debug(`treatment found: ${evaluation.treatment}`);
+      log.debug(`Treatment found: ${evaluation.treatment}`);
 
       return evaluation;
     }
   }
 
-  log.debug('all predicates evaluted, no treatment available');
+  log.debug('All predicates evaluated, no treatment found.');
   return undefined;
 }
 

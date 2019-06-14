@@ -70,7 +70,8 @@
             }
           ]
         }
-      ]
+      ],
+      "configurations": {}
     },
     {
       "orgId": null,
@@ -1185,7 +1186,8 @@
           ],
           "label": "hierarchical dependency label"
         }
-      ]
+      ],
+      "configurations": {}
     },
     {
       "orgId": null,
@@ -1194,6 +1196,7 @@
       "trafficTypeName": null,
       "name": "hierarchical_splits_test",
       "seed": 1276793945,
+      "changeNumber": 2828282828,
       "status": "ACTIVE",
       "killed": false,
       "defaultTreatment": "off",
@@ -1307,6 +1310,130 @@
           ]
         }
       ]
+    },
+    {
+      "orgId": null,
+      "environment": null,
+      "trafficTypeId": null,
+      "trafficTypeName": null,
+      "name": "ta_bucket1_test",
+      "algo": 2,
+      "seed": -1222652054,
+      "trafficAllocation": 1,
+      "trafficAllocationSeed": -1667452163,
+      "status": "ACTIVE",
+      "killed": false,
+      "defaultTreatment": "default_treatment",
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "rollout_treatment",
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "trafficTypeName": null,
+      "name": "split_with_config",
+      "algo": 2,
+      "seed": -1222652064,
+      "trafficAllocation": 100,
+      "changeNumber": 828282828282,
+      "trafficAllocationSeed": -1667492163,
+      "status": "ACTIVE",
+      "killed": false,
+      "defaultTreatment": "on",
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": "group"
+                },
+                "matcherType": "WHITELIST",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": {
+                  "whitelist": [
+                    "value_without_config"
+                  ]
+                },
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 0
+            },
+            {
+              "treatment": "off",
+              "size": 100
+            }
+          ]
+        },
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 100
+            },
+            {
+              "treatment": "off",
+              "size": 0
+            }
+          ],
+          "label": "another expected label"
+        }
+      ],
+      "configurations": {
+        "on": "{\"color\":\"brown\",\"dimensions\":{\"height\":12,\"width\":14},\"text\":{\"inner\":\"click me\"}}"
+      }
     }
   ],
   "since": -1,

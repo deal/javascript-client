@@ -5,28 +5,23 @@ import MetricsFactory from '../metrics';
 import EventsFactory from '../events';
 import SignalsListener from '../listeners';
 import { STANDALONE_MODE, PRODUCER_MODE, CONSUMER_MODE } from '../utils/constants';
+import { releaseApiKey } from '../utils/inputValidation';
 
 //
 // Create SDK instance based on the provided configurations
 //
-function SplitFactoryOnline(context, gateFactory, readyTrackers, mainClientMetricCollectors) {
+function SplitFactoryOnline(context, readyTrackers, mainClientMetricCollectors) {
   const sharedInstance = !!mainClientMetricCollectors;
   const settings = context.get(context.constants.SETTINGS);
+  const readiness = context.get(context.constants.READINESS);
   const storage = context.get(context.constants.STORAGE);
-
-  // Put readiness config within context
-  const readiness = gateFactory(settings.startup.readyTimeout);
-  context.put(context.constants.READINESS, readiness);
+  const statusManager = context.get(context.constants.STATUS_MANAGER);
 
   // We are only interested in exposable EventEmitter
   const { gate, splits, segments } = readiness;
 
   // Events name
-  const {
-    SDK_READY,
-    SDK_UPDATE,
-    SDK_READY_TIMED_OUT
-  } = gate;
+  const { SDK_READY } = gate;
 
   // Shared instances use parent metrics collectors
   const metrics = sharedInstance ? undefined : MetricsFactory(context);
@@ -42,16 +37,20 @@ function SplitFactoryOnline(context, gateFactory, readyTrackers, mainClientMetri
     case STANDALONE_MODE: {
       context.put(context.constants.COLLECTORS, metrics && metrics.collectors);
       // We don't fully instantiate producer if we are creating a shared instance.
-      producer = sharedInstance ?
-        PartialProducerFactory(context) :
-        FullProducerFactory(context);
+      producer = sharedInstance ? PartialProducerFactory(context) : FullProducerFactory(context);
       break;
     }
-    case CONSUMER_MODE:
+    case CONSUMER_MODE: {
+      context.put(context.constants.READY, true); // For SDK inner workings it's supposed to be ready.
+      setTimeout(() => { // Allow for the sync statements to run so client is returned before these are emitted and callbacks executed.
+        splits.emit(splits.SDK_SPLITS_ARRIVED, false);
+        segments.emit(segments.SDK_SEGMENTS_ARRIVED, false);
+      }, 0);
       break;
+    }
   }
 
-  if (readyTrackers && !sharedInstance) { // Only track ready events for non-shared clients
+  if (readyTrackers && producer && !sharedInstance) { // Only track ready events for non-shared and non-consumer clients
     const {
       sdkReadyTracker, splitsReadyTracker, segmentsReadyTracker
     } = readyTrackers;
@@ -69,35 +68,16 @@ function SplitFactoryOnline(context, gateFactory, readyTrackers, mainClientMetri
   metrics && metrics.start();
   events && context.put(context.constants.EVENTS, events) && events.start();
 
-  // Ready promise
-  const readyFlag = sharedInstance ? Promise.resolve() :
-    new Promise((resolve, reject) => {
-      gate.on(SDK_READY, resolve);
-      gate.on(SDK_READY_TIMED_OUT, reject);
-    });
-
   // If no collectors are stored we are on a shared instance, save main one.
   context.put(context.constants.COLLECTORS, mainClientMetricCollectors);
 
   const api = Object.assign(
     // Proto linkage of the EventEmitter to prevent any change
-    Object.create(gate),
-    // GetTreatment/s
+    Object.create(statusManager),
+    // getTreatment/s & track
     ClientFactory(context),
     // Utilities
     {
-      // Ready promise
-      ready() {
-        return readyFlag;
-      },
-
-      // Events contants
-      Event: {
-        SDK_READY,
-        SDK_UPDATE,
-        SDK_READY_TIMED_OUT
-      },
-
       // Destroy instance
       async destroy() {
         // Stop background jobs
@@ -117,6 +97,10 @@ function SplitFactoryOnline(context, gateFactory, readyTrackers, mainClientMetri
 
         // Cleanup storage
         storage.destroy && storage.destroy();
+        // Mark the factory as destroyed.
+        context.put(context.constants.DESTROYED, true);
+        // And release the API Key
+        !sharedInstance && releaseApiKey(settings.core.authorizationKey);
       }
     }
   );

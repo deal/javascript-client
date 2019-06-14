@@ -1,4 +1,4 @@
-import tape from 'tape';
+import tape from 'tape-catch';
 import Keys from '../Keys';
 import SettingsFactory from '../../utils/settings';
 
@@ -76,6 +76,26 @@ tape('KEYS / segments keys', function (assert) {
   assert.end();
 });
 
+tape('KEYS / traffic type keys', function (assert) {
+  const prefix = 'unit_test';
+  const settings = SettingsFactory({
+    core: {
+      key: 'prevent-browser-testing-throw-exception-because-missing-key'
+    },
+    storage: {
+      prefix
+    }
+  });
+  const builder = new Keys(settings);
+
+  const ttName = 'test_trafficType';
+  const expectedKey = `${prefix}.SPLITIO.trafficType.${ttName}`;
+
+  assert.equal(builder.buildTrafficTypeKey(ttName), expectedKey);
+
+  assert.end();
+});
+
 tape('KEYS / impressions', function (assert) {
   const prefix = 'SPLITIO';
   const settings = SettingsFactory({
@@ -96,7 +116,7 @@ tape('KEYS / impressions', function (assert) {
   const builder = new Keys(settings);
 
   const splitName = 'split_name__for_testing';
-  const expectedImpressionKey = `${prefix}.SPLITIO/${settings.version}/${settings.runtime.ip}/impressions.${splitName}`;
+  const expectedImpressionKey = `${prefix}.SPLITIO.impressions`;
 
   assert.true(builder.buildImpressionsKey(splitName) === expectedImpressionKey);
 

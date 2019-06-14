@@ -8,6 +8,7 @@ import {
   find,
   isString,
   isFinite,
+  isObject,
   uniqueId,
   merge,
   uniq,
@@ -15,7 +16,9 @@ import {
   toNumber,
   forOwn,
   groupBy,
-  getFnName
+  getFnName,
+  shallowClone,
+  isBoolean
 } from '../../lang';
 
 tape('LANG UTILS / startsWith', function(assert) {
@@ -35,11 +38,19 @@ tape('LANG UTILS / startsWith', function(assert) {
 
 tape('LANG UTILS / endsWith', function(assert) {
   assert.ok(endsWith('myStr', 'Str'));
-  assert.ok(endsWith('is a str', ' str'));
+  assert.ok(endsWith('myStr2', 'r2'));
+  assert.ok(endsWith('is a str', ' str', false));
+
+  // can be case insensitive too
+  assert.ok(endsWith('myStr', 'str', true));
+  assert.ok(endsWith('myStr', 'str', true));
+  assert.ok(endsWith('myStr', 'Str', true));
 
   assert.notOk(endsWith('myStr', 'Sr'));
   assert.notOk(endsWith('myStr ', 'tr'));
   assert.notOk(endsWith('myStr', 'tr '));
+  assert.notOk(endsWith('myStr', 'str'));
+  assert.notOk(endsWith('myStr', 'str', false));
   assert.notOk(endsWith('myStr', null));
   assert.notOk(endsWith(false, null));
   assert.notOk(endsWith());
@@ -161,6 +172,29 @@ tape('LANG UTILS / isFinite', function(assert) {
   assert.notOk(isFinite({}), 'Should return false for anything that is not a finite number.');
   assert.notOk(isFinite(/regex/), 'Should return false for anything that is not a finite number.');
   assert.notOk(isFinite('5'), 'Should return false for anything that is not a finite number.');
+
+  assert.end();
+});
+
+tape('LANG UTILS / isObject', function(assert) {
+  assert.ok(isObject({}), 'Should return true for map objects.');
+  assert.ok(isObject({ a: true }), 'Should return true for map objects.');
+  assert.ok(isObject(new Object()), 'Should return true for map objects.');
+  assert.ok(isObject(Object.create({})), 'Should return true for map objects.');
+
+  assert.notOk(isObject([]), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(() => {}), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(true), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(false), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(null), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(undefined), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(1), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject('asd'), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(function() {}), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(Symbol('test')), 'Should return false for anything that is not a map object.');
+  assert.notOk(isObject(new Promise(res => res())), 'Should return false for anything that is not a map object.');
+  // Object.create(null) creates an object with no prototype which may be tricky to handle. Filtering that out too.
+  assert.notOk(isObject(Object.create(null)), 'Should return false for anything that is not a map object.');
 
   assert.end();
 });
@@ -300,6 +334,28 @@ tape('LANG UTILS / merge', function(assert) {
   assert.ok(merge(res1, obj1) === res1, 'Always returns the modified target.');
   assert.deepEqual(res1, obj1, 'If target is an empty object, it will be a clone of the source on that one.');
 
+  const one = {};
+  const two = {
+    prop: 'val'
+  };
+  const three = {
+    otherProp: 'val',
+    objProp: { innerProp: true, innerObj: { deeperProp: 'test' }}
+  };
+  const four = {
+    prop: 'val4'
+  };
+
+  const returnedObj = merge(one, two, three, four);
+
+  assert.equal(one, returnedObj, 'The target object should be modified.');
+  assert.deepEqual(two, { prop: 'val' }, 'But no other objects sents as source should be modified.');
+  assert.deepEqual(three, { otherProp: 'val', objProp: { innerProp: true, innerObj: { deeperProp: 'test' }}}, 'But no other objects sents as source should be modified.');
+  assert.deepEqual(four, { prop: 'val4' }, 'But no other objects sents as source should be modified.');
+
+  assert.notEqual(returnedObj.objProp, three.objProp, 'Object properties should be clones of the value we had on source, not a reference.');
+  assert.notEqual(returnedObj.objProp.innerObj, three.objProp.innerObj, 'Object properties should be clones of the value we had on source, not a reference.');
+
   assert.end();
 });
 
@@ -408,3 +464,36 @@ tape('LANG UTILS / getFnName', function(assert) {
 
   assert.end();
 });
+
+tape('LANG UTILS / shallowClone', function(assert) {
+  const toClone = {
+    aProperty: 1,
+    another: 'two',
+    more: null,
+    keys: [undefined, {}],
+    innerObj: { test: true, deeper: { key: 'value' }},
+    bool: true
+  };
+
+  const clone = shallowClone(toClone);
+
+  assert.deepEqual(clone, toClone, 'The structure of the shallow clone should be the same since references are copied too.');
+  assert.notEqual(clone, toClone, 'But the reference to the object itself is differente since it is a clone');
+  assert.equal(clone.innerObj, toClone.innerObj, 'Internal references are just copied as references, since the clone is shallow.');
+
+  assert.end();
+});
+
+tape('LANG UTILS / isBoolean', function(assert) {
+  const notBool = [
+    null, undefined, 0, 1, NaN, Infinity, function() {}, new Promise(() => {}), [], {}, 'true', 'false'
+  ];
+
+  // negatives
+  notBool.forEach(val => assert.false(isBoolean(val)));
+  // positives
+  [true, false].forEach(val => assert.true(isBoolean(val)));
+
+  assert.end();
+});
+

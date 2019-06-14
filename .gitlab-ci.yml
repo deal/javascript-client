@@ -4,7 +4,6 @@
 #
 image: node:9.11.2
 
-
 stages:
   - publish
 
@@ -19,7 +18,7 @@ stages:
 
 .npm_install:
   before_script: &npm_install
-    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN_RO}' > .npmrc
     - npm i
 
 npm:

@@ -4,6 +4,7 @@
 #
 image: node:9.11.2
 
+
 stages:
   - publish
 
@@ -23,6 +24,8 @@ stages:
 
 npm:
   stage: publish
+  tags:
+  - 1000m1Gi
   environment: production
   extends: .npm_install
   script:

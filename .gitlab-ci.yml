@@ -28,7 +28,7 @@ npm:
   environment: production
   extends: .npm_install
   script:
-    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN_RW}' > .npmrc
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN_RW}" > .npmrc
     - npm run rebuild
     - npm run semantic-release
   only:

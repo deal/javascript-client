@@ -27,19 +27,19 @@ prepare:
   stage: setup
   cache: *cache_rw
   script: *npm_install
-  # Only running this on master to refresh yarn cache
+  # Only running this on master to refresh NPM cache
   # branches will reuse this cache and refresh locally
   only:
     - master
 
-test:
-  stage: execute
-  extends: .npm_install
-  cache: *cache_readonly
-  script:
-    - npm run test
-  only:
-    - branches
+# test:
+#   stage: execute
+#   extends: .npm_install
+#   cache: *cache_readonly
+#   script:
+#     - npm run test
+#   only:
+#     - branches
 
 build:
   stage: execute

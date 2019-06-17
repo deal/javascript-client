@@ -56,6 +56,6 @@ publish:
   extends: .npm_install
   script:
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-    - npm run semantic-release
+    - yarn run semantic-release
   only:
     - master

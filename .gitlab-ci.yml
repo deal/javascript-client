@@ -1,35 +1,54 @@
 #
 # Check https://docs.gitlab.com/ee/ci/yaml/README.html for more details
-# Use https://gitlab.com/dealdotcom/split-javascript-client/-/ci/lint to test this file
+# Use https://gitlab.com/dealdotcom/chat-firebase-js/-/ci/lint to test this file
 #
-image: node:9.11.2
+image: node:12.3.1
 
 stages:
-  - publish
+  - setup
+  - execute
+  - deploy
 
 # https://docs.gitlab.com/ee/ci/yaml/#anchors
 .cache_rw: &cache_rw
   paths: &cache_paths
     - node_modules/
+    - .yarn
 
 .cache_ro: &cache_readonly
   <<: *cache_rw
   policy: pull
 
-.npm_install:
-  before_script: &npm_install
+.yarn_install:
+  before_script: &yarn_install
     - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN_RO}' > .npmrc
-    - npm i
+    - yarn config set cache-folder .yarn
+    - yarn install --frozen-lockfile
 
-npm:
-  stage: publish
-  tags:
-  - 1000m1Gi
-  environment: production
-  extends: .npm_install
+prepare:
+  stage: setup
+  cache: *cache_rw
+  script: *yarn_install
+  # Only running this on master to refresh yarn cache
+  # branches will reuse this cache and refresh locally
+  only:
+    - master
+
+build:
+  stage: execute
+  extends: .yarn_install
+  cache: *cache_readonly
   script:
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN_RW}" > .npmrc
-    - npm run rebuild
-    - npm run semantic-release
+    - yarn build
+  only:
+    - branches
+
+publish:
+  stage: deploy
+  environment: production
+  extends: .yarn_install
+  script:
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - yarn semantic-release
   only:
     - master

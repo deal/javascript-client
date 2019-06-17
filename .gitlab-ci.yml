@@ -20,7 +20,7 @@ stages:
 
 .npm_install:
   before_script: &npm_install
-    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN_RO}' > .npmrc
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN_RO}" > .npmrc
     - npm i
 
 prepare:
@@ -55,7 +55,7 @@ publish:
   environment: production
   extends: .npm_install
   script:
-    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     - npm semantic-release
   only:
     - master

@@ -279,6 +279,7 @@ interface INodeBasicSettings extends ISharedSettings {
  * @interface IStatusInterface
  * @extends NodeJS.Events
  */
+// @ts-ignore
 interface IStatusInterface extends NodeJS.Events {
   /**
    * Constant object containing the SDK events for you to use.

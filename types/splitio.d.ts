@@ -279,6 +279,7 @@ interface INodeBasicSettings extends ISharedSettings {
  * @interface IStatusInterface
  * @extends NodeJS.Events
  */
+// @ts-ignore See: https://github.com/deal/split-javascript-client/pull/3 (which was accidentally merged into the wrong branch)
 interface IStatusInterface extends NodeJS.Events {
   /**
    * Constant object containing the SDK events for you to use.
